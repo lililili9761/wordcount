@@ -40,9 +40,7 @@ public class Filecount {
         boolean note = false;//用于纪录/**/类型的注释的开始与结束
         //readLine()每次读取一行，转化为字符串，br.readLine()为null时，不执行
         while ((str = br.readLine()) != null) {
-            str += '\n';//readLine()不会读取每一行最后的换行符，所以这里我们手动给每一行加上换行符
             Charcount += str.length();//字符计数
-
             str = str.trim();//用trim函数去除每一行第一个字符前的空格，以便之后所有的计数操作
             String[] wordc = str.split(" |,");//按空格或逗号进行分词操作
             Wordcount += wordc.length;//单词计数
@@ -58,6 +56,7 @@ public class Filecount {
 			}
 
             Linecount++;//行计数
+			Charcount=Charcount+Linecount-1;
 	       
 			if(str.matches("//.*")){
 				Notelinecount++;
