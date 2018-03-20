@@ -241,5 +241,14 @@ public class Filecount {
             output.flush();
             output.close();
         }
+		if(changeoutput==0){
+			String soutputpath=".\\result.txt";//当没有-o时的输出路径
+			File sfile = new File(soutputpath);
+			sfile.createNewFile();
+			BufferedWriter soutput = new BufferedWriter(new FileWriter(sfile));
+			soutput.write(outputBuffer);
+			soutput.flush();
+			soutput.close();
+		}
     }
 }
