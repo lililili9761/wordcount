@@ -74,7 +74,8 @@ public class Filecount {
 				Notelinecount++;
 				note=true;
 			}
-			else if(!note&&str.matches("[\\s&&[^\\n]]*")){
+			else if(!note&&(str.matches("[\\s&&[^\\n]]*"))||(str.matches("[{}]")))
+			{
 				Spacelinecount++;
 			}
 			else{
