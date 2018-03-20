@@ -29,36 +29,39 @@ public class Filecount {
 
     public void Filecounter(String path,int isstop,String[] Stoplist) throws IOException {
         String str = "";
-        //打开文件输入流
-        FileInputStream fis = new FileInputStream(path);
-        //字符流写入缓冲区
+        FileInputStream fis = new FileInputStream(path);//打开文件输入流
         InputStreamReader isr = new InputStreamReader(fis);
-        BufferedReader br = new BufferedReader(isr);
-        //  获取文件名以备输出
-        String[] Strings = path.split("\\\\");
-        Filename = Strings[Strings.length - 1];
+        BufferedReader br = new BufferedReader(isr);//字符流写入缓冲区
+        String[] Strings = path.split("\\\\");//将文件路径按\\进行分词操作
+        Filename = Strings[Strings.length - 1]; 
+		//文件路径分词后得到的字符串数组的最后一个是文件名，获取文件名以备输出
         boolean note = false;//用于纪录/**/类型的注释的开始与结束
-        //readLine()每次读取一行，转化为字符串，br.readLine()为null时，不执行
+       
+	   //readLine()每次读取一行，转化为字符串，br.readLine()为null时，不执行
         while ((str = br.readLine()) != null) {
             Charcount += str.length();//字符计数
             str = str.trim();//用trim函数去除每一行第一个字符前的空格，以便之后所有的计数操作
-            String[] wordc = str.split(" |,");//按空格或逗号进行分词操作
-            Wordcount += wordc.length;//单词计数
+            String[] wordc = str.split(" |,");//根据需求按空格或逗号进行分词操作，将得到的单词放入一个字符串数组
+            Wordcount += wordc.length;//单词计数：字符串数组的长度就是单词的个数
+			//当需要对停词表中的词进行处理时
 			if(isstop == 1){
 				for(String w : wordc){
 					for(String words : Stoplist){
 						//equalsIngnoreCase()与equal()不同，是不区分大小写的比较
 						if(w.equalsIgnoreCase(words)){
-							Wordcount--;
+							Wordcount--;//如果Stoplist中的词与wordc中的词匹配，将单词数减一
 						}
 					}
 				}
 			}
-
             Linecount++;//行计数
 			Charcount=Charcount+Linecount-1;
-	       
-			if(str.matches("//.*")){
+			/*
+			这里是因为readLine()获得的一行不包括该行末尾的换行符
+			前面的Charcount仅仅计算了一行中除了换行符外的字符
+			在计算出行数后，由于最后一行不包含换行符，而前面所有行都包含换行符，所以做出这样的计算
+			*/
+	        if(str.matches("//.*")){//正则表达式的使用
 				Notelinecount++;
 			}
 			else if(str.matches("^/\\*.*\\*/$")){
@@ -163,7 +166,7 @@ public class Filecount {
         String outputpath=".\\result.txt";//输出文件的路径
 		String Stoplistpath = null;
 		String[] Stoplist = null;
-        String configg="-\\w";//用于匹配字母参数的正则表达式
+        String configg="-\\w";//用于匹配"-+字母"参数的正则表达式
         String outputBuffer = "";//文件输出缓冲区，将缓冲区的文件输出到result.txt
         int lable=0;//定义工作模式：labal=0为默认统计，labal=1为递归统计
         int isstop=0;//判别是否需要考虑停用词
