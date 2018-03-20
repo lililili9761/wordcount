@@ -27,19 +27,17 @@ public class Filecount {
     File afile;
     File[] files;
 
-    public void Filecounter(String path) throws IOException {
+    public void Filecounter(String path,int isstop,String[] Stoplist) throws IOException {
         String str = "";
         //打开文件输入流
         FileInputStream fis = new FileInputStream(path);
         //字符流写入缓冲区
         InputStreamReader isr = new InputStreamReader(fis);
         BufferedReader br = new BufferedReader(isr);
-        //  换取文件名以备输出
+        //  获取文件名以备输出
         String[] Strings = path.split("\\\\");
         Filename = Strings[Strings.length - 1];
-        boolean note = false;
-		String Nodebegin="\\s*/\\*.*";
-		String Nodeend=".*\\*/\\s*";
+        boolean note = false;//用于纪录/**/类型的注释的开始与结束
         //readLine()每次读取一行，转化为字符串，br.readLine()为null时，不执行
         while ((str = br.readLine()) != null) {
             str += '\n';//readLine()不会读取每一行最后的换行符，所以这里我们手动给每一行加上换行符
@@ -48,16 +46,19 @@ public class Filecount {
             str = str.trim();//用trim函数去除每一行第一个字符前的空格，以便之后所有的计数操作
             String[] wordc = str.split(" |,");//按空格或逗号进行分词操作
             Wordcount += wordc.length;//单词计数
+			if(isstop == 1){
+				for(String w : wordc){
+					for(String words : Stoplist){
+						//equalsIngnoreCase()与equal()不同，是不区分大小写的比较
+						if(w.equalsIgnoreCase(words)){
+							Wordcount--;
+						}
+					}
+				}
+			}
 
             Linecount++;//行计数
 	       
-		    /*if((str==""||str.length()<=1)&&（label==0）{
-				Spacelinecount++;//空行的检测与计数
-			else if((str.length()>2&&str.substring(1,3).equals("//"))||str.substring(0,2).equals("//")&&label==0)
-				Notelinecount++;
-			else if((str.length()>2&&str.substring(1,3).equals("/*"))||str.substring(0,2).equals("/*")&&label==0){
-				Notelinecount++;
-			else*/
 			if(str.matches("//.*")){
 				Notelinecount++;
 			}
@@ -161,15 +162,21 @@ public class Filecount {
     public static void main(String[] args) throws IOException {
         String path = "E:\\wordc\\src\\Filecount.java";//需要统计的文件的路径
         String outputpath=".\\result.txt";//输出文件的路径
-        String configg="-\\w";//用于匹配参数
+		String Stoplistpath = null;
+		String[] Stoplist = null;
+        String configg="-\\w";//用于匹配字母参数的正则表达式
         String outputBuffer = "";//文件输出缓冲区，将缓冲区的文件输出到result.txt
         int lable=0;//定义工作模式：labal=0为默认统计，labal=1为递归统计
-        int changeoutput=0;//当此变量等于1时，意味着有-o参数，需要把buffer区的文件输出到指定的文件（例如output.txt）
+        int isstop=0;//判别是否需要考虑停用词
+		int changeoutput=0;//当此变量等于1时，意味着有-o参数，需要把buffer区的文件输出到指定的文件（例如output.txt）
         //遍历参数数组args[]
         for(int i=0;i<args.length;i++){
             if(!(Pattern.matches(configg,args[i]))){
-                if(args[i-1].equals("-o"))
-                {
+				if(args[i-1].equals("-e")){
+					Stoplistpath=args[i];
+					isstop=1;
+				}
+                if(args[i-1].equals("-o")){
                     outputpath=args[i];
                     changeoutput=1;
                 }
@@ -178,6 +185,19 @@ public class Filecount {
                 }
             }
         }
+		//首先对停用表进行处理
+		if(isstop==1){
+			//打开文件输入流
+			FileInputStream stop = new FileInputStream(Stoplistpath);
+			//字符流写入缓冲区
+			InputStreamReader Stopstream = new InputStreamReader(stop);
+			BufferedReader Stopbuffer = new BufferedReader(Stopstream);
+			String Stopstring="";
+			while((Stopstring=Stopbuffer.readLine())!=null){
+				Stoplist=Stopstring.split(" ");
+			}
+		}
+		//接着对工作模式进行判断
         if(args[0].equals("-s")){
             lable=1;
         }
@@ -203,14 +223,14 @@ public class Filecount {
             for(String list:s.filePath){
                // System.out.println("File name："+list);
                 //outputBuffer+="File name:"+list+"\r\n";
-                Filecount counter=new Filecount();
-                counter.Filecounter(list);
+                Filecount counter = new Filecount();
+                counter.Filecounter(list,isstop,Stoplist);
                 outputBuffer=Output(args,counter,outputBuffer);
             }
         }
         if(lable==0){
             Filecount counter = new Filecount();
-            counter.Filecounter(path);
+            counter.Filecounter(path,isstop,Stoplist);
             outputBuffer = Output(args, counter, outputBuffer);
         }
         if(changeoutput==1){
