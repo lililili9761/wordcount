@@ -37,17 +37,50 @@ public class Filecount {
         //  换取文件名以备输出
         String[] Strings = path.split("\\\\");
         Filename = Strings[Strings.length - 1];
-        int note = 0;
+        boolean note = false;
+		String Nodebegin="\\s*/\\*.*";
+		String Nodeend=".*\\*/\\s*";
         //readLine()每次读取一行，转化为字符串，br.readLine()为null时，不执行
         while ((str = br.readLine()) != null) {
             str += '\n';//readLine()不会读取每一行最后的换行符，所以这里我们手动给每一行加上换行符
             Charcount += str.length();//字符计数
 
-            str = str.trim();//用trim函数去除每一行第一个字符前的空格
+            str = str.trim();//用trim函数去除每一行第一个字符前的空格，以便之后所有的计数操作
             String[] wordc = str.split(" |,");//按空格或逗号进行分词操作
             Wordcount += wordc.length;//单词计数
 
             Linecount++;//行计数
+	       
+		    /*if((str==""||str.length()<=1)&&（label==0）{
+				Spacelinecount++;//空行的检测与计数
+			else if((str.length()>2&&str.substring(1,3).equals("//"))||str.substring(0,2).equals("//")&&label==0)
+				Notelinecount++;
+			else if((str.length()>2&&str.substring(1,3).equals("/*"))||str.substring(0,2).equals("/*")&&label==0){
+				Notelinecount++;
+			else*/
+			if(str.matches("//.*")){
+				Notelinecount++;
+			}
+			else if(str.matches("^/\\*.*\\*/$")){
+				Notelinecount++;
+			}
+			else if(note){
+				Notelinecount++;
+				if(str.matches(".*\\*/$")){
+					note=false;
+				}
+			}
+			else if(str.matches("^/\\*.*[^\\*/$]")){
+				Notelinecount++;
+				note=true;
+			}
+			else if(!note&&str.matches("[\\s&&[^\\n]]*")){
+				Spacelinecount++;
+			}
+			else{
+				Codelinecount++;
+			}
+			
         }
         isr.close();
     }
@@ -91,6 +124,7 @@ public class Filecount {
         int notechar = 0;//根据用户的输入标记哪些项目要被输出
         int noteword = 0;
         int noteline = 0;
+		int notea = 0;
         for (String span:args) {
             if (span.equals("-c")) {
                 notechar = 1;
@@ -101,6 +135,9 @@ public class Filecount {
             else if (span.equals("-l")) {
                 noteline = 1;
             }
+			else if(span.equals("-a")){
+				notea = 1;
+			}
         }
         if (notechar == 1) {
             System.out.println(counter.Filename + ",字符数：" + counter.Charcount);
@@ -114,7 +151,11 @@ public class Filecount {
             System.out.println(counter.Filename + ",行数：" + counter.Linecount);
             buffer += counter.Filename + ",行数：" + counter.Linecount + "\r\n";
         }
-        return buffer;
+		if(notea == 1) {
+			System.out.println(counter.Filename+",代码行/空行/注释行："+counter.Codelinecount+"/"+counter.Spacelinecount+"/"+counter.Notelinecount);
+			buffer+=counter.Filename+",代码行/空行/注释行："+counter.Codelinecount+"/"+counter.Spacelinecount+"/"+counter.Notelinecount+"\r\n";
+        }
+		return buffer;
     }
     public static void main(String[] args) throws IOException {
         String path = "E:\\wordc\\src\\Filecount.java";//需要统计的文件的路径
