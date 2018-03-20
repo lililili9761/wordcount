@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="wordc:jar">
+    <output-path>$PROJECT_DIR$/../wordc/out/artifacts/wordc_jar</output-path>
+    <root id="archive" name="wordc.jar">
+      <element id="module-output" name="wordc" />
+    </root>
+  </artifact>
+</component>
